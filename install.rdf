@@ -7,7 +7,7 @@
                      em:name="Org Everywhere"
                      em:version="0.1"
                      em:creator="mooz"
-                     em:description="Edit rich text editor with Org-mode notation"
+                     em:description="Use org-mode notation in every rich editors"
                      em:homepageURL="https://github.com/mooz/org-everywhere"
                      em:optionsURL="about:blank?org-everywhere-config"
                      em:bootstrap="true">
@@ -18,7 +18,7 @@
         <em:localized>
             <RDF:Description em:locale="en-US"
                              em:name="Org Everywhere"
-                             em:description="Edit rich text editor with Org-mode notation"
+                             em:description="Use org-mode notation in every rich editors"
                              >
             </RDF:Description>
         </em:localized>
