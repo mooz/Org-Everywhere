@@ -62,10 +62,10 @@ var Org = (function () {
   // var Node = require("./node.js").Node;
 
   var HtmlTextConverter = {
-    convertDocument: function (doc) {
+    convertDocument: function (doc, noTitle) {
       var title = doc.title ? this.convertNode(doc.title) : "untitled";
 
-      return "<h1>" + title + "</h1>\n"
+      return (noTitle ? "" : "<h1>" + title + "</h1>\n")
         + this.convertNodes(doc.nodes);
     },
 
@@ -361,8 +361,10 @@ var Org = (function () {
   // var Lexer  = require("./lexer.js").Lexer;
   // var Node   = require("./node.js").Node;
 
-  function Parser() {
+  function Parser(options) {
+    options = options || {};
     this.inlineParser = new InlineParser();
+    this.noTitle = options.noTitle;
   }
 
   Parser.prototype = {
@@ -395,7 +397,8 @@ var Org = (function () {
     // ------------------------------------------------------------
 
     parseDocument: function () {
-      this.parseTitle();
+      if (!this.noTitle)
+        this.parseTitle();
 
       while (this.lexer.hasNext()) {
         var element = this.parseElement();
