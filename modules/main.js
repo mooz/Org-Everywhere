@@ -83,9 +83,13 @@ function handleWindow(aWindow) {
   // ============================================================ //
 
   function getTargetElement(ev) {
-    return window.gContextMenu ?
-      window.gContextMenu.target
-      : ev.originalTarget;
+    if (window.gContextMenu)
+      return window.gContextMenu.target;
+    if (document.commandDispatcher.focusedElement)
+      return document.commandDispatcher.focusedElement;
+    if (document.commandDispatcher.focusedWindow.document.activeElement)
+      return document.commandDispatcher.focusedWindow.document.activeElement;
+    return ev.target;
   }
 
   function getBody(elem) {
@@ -138,7 +142,6 @@ function handleWindow(aWindow) {
       .child(
         editor = Element("textbox")
           .attr("multiline", "true")
-          .attr("style", "width:400px;height:300px;")
           .$
       )
       .$
@@ -188,11 +191,16 @@ function handleWindow(aWindow) {
     let candidates = doc.querySelectorAll(elemName);
     orgCodeContainer = candidates.length > 0 ?
       candidates[candidates.length - 1]
-      : Element(elemName, doc)
-      .attr("style", "display:none")
-      .$;
+      : Element(elemName, doc).$;
 
-    panel.openPopup(target, "center");
+    let { innerWidth: width, innerHeight: height } = doc.defaultView;
+    let editorStyle = "width:" + width + "px;height:" + height + "px;";
+    editor.setAttribute("style", editorStyle);
+
+    // Style attribute may be deleted by service provider (Tumblr, Posterous, ...)
+    orgCodeContainer.setAttribute("style", "display:none");
+
+    panel.openPopup(docElem, "center");
   }
 
   window.Oew = {
