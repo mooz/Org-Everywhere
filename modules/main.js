@@ -146,7 +146,7 @@ function handleWindow(aWindow) {
 
   let currentDocument = null;
   let orgCodeContainer = null;
-  let parser = new Org.Parser();
+  let parser = new Org.Parser({ noTitle: true });
   editor.addEventListener("input", function () {
     dumpOrgCode();
   }, false);
@@ -157,7 +157,7 @@ function handleWindow(aWindow) {
       let body = getBody(currentDocument.documentElement);
 
       body.innerHTML
-        = Org.HtmlTextConverter.convertDocument(parser.parse(code));
+        = Org.HtmlTextConverter.convertDocument(parser.parse(code), true);
       orgCodeContainer.textContent = code;
       body.appendChild(orgCodeContainer);
     }
