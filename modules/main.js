@@ -1,7 +1,7 @@
 var { WindowManager } = load('lib/WindowManager');
 var { Org } = load('lib/org');
 var { KeyboardShortcut } = load('lib/KeyboardShortcut');
-var timer = load('lib/org');
+var timer = load('lib/jstimer');
 
 const TYPE_BROWSER = 'navigator:browser';
 
