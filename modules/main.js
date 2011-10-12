@@ -112,9 +112,50 @@ function handleWindow(aWindow) {
   DOM.appendChild(contextMenu, menuitem);
   menuitem.addEventListener("command", launchEditor, false);
 
+  function blinkElement(elem, count, interval) {
+    var flasher = Cc["@mozilla.org/inspector/flasher;1"].createInstance(Ci.inIFlasher);
+    flasher.color = "#bfdecf";
+    flasher.thickness = 3;
+    // flasher.scrollElementIntoView(el);
+
+    var blinked = 0;
+    var drawOutLine = true;
+    var id = timer.setInterval(function() {
+      if (blinked > count) {
+        timer.clearInterval(id);
+        drawOutLine = false;
+      }
+
+      if (drawOutLine) {
+        flasher.drawElementOutline(elem);
+      } else {
+        flasher.repaintElement(elem);
+        blinked++;
+      }
+
+      drawOutLine = !drawOutLine;
+    }, interval / 2);
+  }
+
+  function getActualContentEditableElement(elem) {
+    if (!elem)
+      return null;
+    else if (elem.contentEditable === "true")
+      return elem;
+    else
+      return getActualContentEditableElement(elem.parentNode);
+  }
+
+  function getEditableElement(elem) {
+    if (/^on$/i.test(elem.ownerDocument.designMode))
+      return getBody(elem); // .ownerDocument.documentElement;
+    else
+      return getActualContentEditableElement(elem);
+  }
+
   function setMenuDisplay(ev) {
-    let body = getBody(getTargetElement(ev));
-    menuitem.hidden = !body.contentEditable;
+    let target = getTargetElement(ev);
+    menuitem.hidden = !getEditableElement(target);
   }
   contextMenu.addEventListener("popupshowing", setMenuDisplay, false);
 
@@ -148,7 +189,7 @@ function handleWindow(aWindow) {
       .$
   );
 
-  let currentDocument = null;
+  let currentEditableElement = null;
   let orgCodeContainer = null;
   let parser = new Org.Parser({ noTitle: true });
   editor.addEventListener("input", function () {
@@ -156,14 +197,13 @@ function handleWindow(aWindow) {
   }, false);
 
   function dumpOrgCode() {
-    if (currentDocument) {
+    if (currentEditableElement) {
       let code = editor.value;
-      let body = getBody(currentDocument.documentElement);
 
-      body.innerHTML
+      currentEditableElement.innerHTML
         = Org.HtmlTextConverter.convertDocument(parser.parse(code), true);
       orgCodeContainer.textContent = code;
-      body.appendChild(orgCodeContainer);
+      currentEditableElement.appendChild(orgCodeContainer);
     }
   }
 
@@ -183,25 +223,32 @@ function handleWindow(aWindow) {
 
   function launchEditor(ev) {
     let target = getTargetElement(ev);
-
     let doc = target.ownerDocument;
-    let docElem = doc.documentElement;
+    currentEditableElement = getEditableElement(target);
 
-    currentDocument = doc;
+    console.log("currentEditableElement: " + currentEditableElement.localName);
+
+    if (!currentEditableElement)
+      return;
+
+    blinkElement(currentEditableElement, 2, 250);
+
     const elemName = "pre";
-    let candidates = doc.querySelectorAll(elemName);
+    let candidates = currentEditableElement.querySelectorAll(elemName);
     orgCodeContainer = candidates.length > 0 ?
       candidates[candidates.length - 1]
       : Element(elemName, doc).$;
 
-    let { innerWidth: width, innerHeight: height } = doc.defaultView;
+    // let { innerWidth: width, innerHeight: height } = currentEditableElement.
+    let width = currentEditableElement.clientWidth;
+    let height = currentEditableElement.clientHeight;
     let editorStyle = "width:" + width + "px;height:" + height + "px;";
     editor.setAttribute("style", editorStyle);
 
     // Style attribute may be deleted by service provider (Tumblr, Posterous, ...)
     orgCodeContainer.setAttribute("style", "display:none");
 
-    panel.openPopup(docElem, "center");
+    panel.openPopup(currentEditableElement, "before_start", 0, 0, false, true);
   }
 
   window.Oew = {
