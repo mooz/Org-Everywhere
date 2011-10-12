@@ -3,14 +3,15 @@ var { Org } = load('lib/org');
 var { KeyboardShortcut } = load('lib/KeyboardShortcut');
 var timer = load('lib/jstimer');
 
+let { classes: Cc, interfaces: Ci } = Components;
+
 const TYPE_BROWSER = 'navigator:browser';
 
 const ID = "3ec95456-6ad8-4023-92cd-6bc4fa4790d4";
 function id(name) ID + "-" + name;
 
 const console = (function () {
-  let consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-        .getService(Components.interfaces.nsIConsoleService);
+  let consoleService = Cc["@mozilla.org/consoleservice;1"].getService(Ci.nsIConsoleService);
 
   return {
     log: function (msg) {
